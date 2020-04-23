@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebAPI_ICO_AOP.BLL\WebAPI_ICO_AOP.BLL.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.DAL\WebAPI_ICO_AOP.DAL.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.IBLL\WebAPI_ICO_AOP.IBLL.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.ICO\WebAPI_ICO_AOP.ICO.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.IDAL\WebAPI_ICO_AOP.IDAL.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.IModels\WebAPI_ICO_AOP.IModels.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.Models\WebAPI_ICO_AOP.Models.csproj" />
+  </ItemGroup>
+
+</Project>

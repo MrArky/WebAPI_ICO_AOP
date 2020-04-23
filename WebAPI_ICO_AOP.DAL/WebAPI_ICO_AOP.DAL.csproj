@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebAPI_ICO_AOP.IDAL\WebAPI_ICO_AOP.IDAL.csproj" />
+    <ProjectReference Include="..\WebAPI_ICO_AOP.IModels\WebAPI_ICO_AOP.IModels.csproj" />
+  </ItemGroup>
+
+</Project>
