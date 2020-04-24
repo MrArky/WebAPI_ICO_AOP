@@ -30,7 +30,7 @@ namespace WebAPI_ICO_AOP.Controllers
             myICO.Register<IGetPersonInfoDAL, GetPersonInfoDAL>();
             myICO.Register<IGetPersonInfoDAL, GetPersonInfoTwoDAL>("Two");//同时传入arguments参数
             myICO.Register<IGetPersonInfoBLL, GetPersonInfoBLL>(arguments: new object[] { "abc", 12 }, lifeTime: LifeTime.Singleton);
-            myICO.Register<IGetPersonInfoBLL, GetPersonInfoTwoBLL>("Two", lifeTime: LifeTime.Transient);
+            myICO.Register<IGetPersonInfoBLL, GetPersonInfoTwoBLL>("Two", lifeTime: LifeTime.Scoped);
             myICO.Register<IBaseModels, Person>();
             #endregion
             this._getPersonInfoBLL = myICO.Resolve<IGetPersonInfoBLL>();
@@ -45,7 +45,9 @@ namespace WebAPI_ICO_AOP.Controllers
         {
             Console.WriteLine(_getPersonInfoBLLScoped1 == _getPersonInfoBLLScoped2);
             Console.WriteLine(_getPersonInfoBLL == _getPersonInfoBLL1);
+            Console.WriteLine("俄罗斯套娃开始了:");
             Person _m = (Person)_getPersonInfoBLL.getInfo();
+            Console.WriteLine("俄罗斯套娃结束了。");
             return _m;
         }
     }

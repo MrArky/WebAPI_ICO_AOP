@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using WebAPI_ICO_AOP.AOP.Attributes;
 using WebAPI_ICO_AOP.IBLL;
 using WebAPI_ICO_AOP.ICO.Attributes;
 using WebAPI_ICO_AOP.IDAL;
@@ -45,7 +46,7 @@ namespace WebAPI_ICO_AOP.BLL
         /// </summary>
         /// <param name="getPersonInfoDAL"></param>
         [MyICOMethodInjection]
-        public void funcInjection(IGetPersonInfoDAL getPersonInfoDAL)
+        public void FuncInjection(IGetPersonInfoDAL getPersonInfoDAL)
         {
             this._getPersonInfoDAL3 = getPersonInfoDAL;
         }
@@ -53,7 +54,7 @@ namespace WebAPI_ICO_AOP.BLL
         /// 方法注入(不带特性是无法注入的)
         /// </summary>
         /// <param name="getPersonInfoDAL"></param>
-        public void funcInjection2(IGetPersonInfoDAL getPersonInfoDAL)
+        public void FuncInjection2(IGetPersonInfoDAL getPersonInfoDAL)
         {
             this._getPersonInfoDAL4 = getPersonInfoDAL;
         }
@@ -63,6 +64,7 @@ namespace WebAPI_ICO_AOP.BLL
         /// <returns></returns>
         public IBaseModels getInfo()
         {
+            Console.WriteLine("————————这是方法自身执行的内容");
             return _getPersonInfoDAL.getInfo();
         }
     }

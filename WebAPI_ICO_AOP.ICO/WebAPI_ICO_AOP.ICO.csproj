@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WebAPI_ICO_AOP.AOP\WebAPI_ICO_AOP.AOP.csproj" />
+  </ItemGroup>
+
 </Project>

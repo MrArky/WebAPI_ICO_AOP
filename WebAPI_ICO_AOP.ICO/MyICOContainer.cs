@@ -4,6 +4,8 @@ using System.Text;
 using System.Linq;
 using WebAPI_ICO_AOP.ICO.Attributes;
 using System.Reflection;
+using WebAPI_ICO_AOP.AOP;
+using WebAPI_ICO_AOP.AOP.Attributes;
 
 /**
  * 1.注册
@@ -42,7 +44,7 @@ namespace WebAPI_ICO_AOP.ICO
         /// <param name="fullName"></param>
         /// <param name="realizeMarkName"></param>
         /// <returns></returns>
-        private string getKey(string fullName, string realizeMarkName) => $"{fullName}♣▣✪✣♪{realizeMarkName}";//♣▣✪✣♪特殊符号不容易被后期使用者命名时命中
+        private string GetKey(string fullName, string realizeMarkName) => $"{fullName}♣▣✪✣♪{realizeMarkName}";//♣▣✪✣♪特殊符号不容易被后期使用者命名时命中
         /// <summary>
         /// 注册方法
         /// </summary>
@@ -53,8 +55,8 @@ namespace WebAPI_ICO_AOP.ICO
         /// <param name="lifeTime"></param>
         public void Register<TFrom, TTo>(string realizeMarkName = null, object[] arguments = null, LifeTime lifeTime = LifeTime.Transient) where TTo : TFrom//泛型约束，即TTo必须是TFrom的实现，也可理解为TTo必须继承TFrom
         {
-            MyICOContainerDictionary.Add(this.getKey(typeof(TFrom).FullName, realizeMarkName), new MyICOContainerModel() { type = typeof(TTo), lifeTime = lifeTime });
-            MyICOContainerValueDictionary.Add(this.getKey(typeof(TFrom).FullName, realizeMarkName), arguments);
+            MyICOContainerDictionary.Add(this.GetKey(typeof(TFrom).FullName, realizeMarkName), new MyICOContainerModel() { type = typeof(TTo), lifeTime = lifeTime });
+            MyICOContainerValueDictionary.Add(this.GetKey(typeof(TFrom).FullName, realizeMarkName), arguments);
         }
         /// <summary>
         /// 根据接口创建对象
@@ -74,8 +76,8 @@ namespace WebAPI_ICO_AOP.ICO
         /// <returns></returns>
         private object CreateResolveObjectByType(Type type, string realizeMarkName = null)
         {
-            string key = this.getKey(type.FullName, realizeMarkName);
-            type = MyICOContainerDictionary[key].type;
+            string key = this.GetKey(type.FullName, realizeMarkName);
+            Type classType = MyICOContainerDictionary[key].type;
             #region 生命周期管理
             switch (this.MyICOContainerDictionary[key].lifeTime)
             {
@@ -94,9 +96,9 @@ namespace WebAPI_ICO_AOP.ICO
             #endregion
             #region 构造函数注入
             //如果有声明MyICOConstuctorInjectionAttribute特性，使用申明的参数最长的那个,否则直接使用构造函数最长的那个（特性优先、参数数量多者优先原则）
-            ConstructorInfo constuctor = type.GetConstructors().Where(item => item.IsDefined(typeof(MyICOConstuctorInjectionAttribute), true)).Count() > 0
-                                       ? type.GetConstructors().Where(item => item.IsDefined(typeof(MyICOConstuctorInjectionAttribute), true)).OrderByDescending(item => item.GetParameters().Length).First()
-                                       : type.GetConstructors().OrderByDescending(item => item.GetParameters().Length).First();
+            ConstructorInfo constuctor = classType.GetConstructors().Where(item => item.IsDefined(typeof(MyICOConstuctorInjectionAttribute), true)).Count() > 0
+                                       ? classType.GetConstructors().Where(item => item.IsDefined(typeof(MyICOConstuctorInjectionAttribute), true)).OrderByDescending(item => item.GetParameters().Length).First()
+                                       : classType.GetConstructors().OrderByDescending(item => item.GetParameters().Length).First();
             //将所有的参数保存起来
             List<object> listPara = new List<object>();
             //找出所有的常量值类型参数
@@ -109,27 +111,33 @@ namespace WebAPI_ICO_AOP.ICO
                     listPara.Add(objValues[constIndex++]);
                 else
                     //参数可能又是另一个对象的依赖，比如Controller依赖BLL，BLL又依赖DAL，DAL继续依赖了Models
-                    listPara.Add(this.CreateResolveObjectByType(para.ParameterType, this.realizeMarkName(para)));//递归
+                    listPara.Add(this.CreateResolveObjectByType(para.ParameterType, this.RealizeMarkName(para)));//递归
             }
             #endregion
-            var objInstance = Activator.CreateInstance(type, listPara.ToArray());
+            var objInstance = Activator.CreateInstance(classType, listPara.ToArray());
             #region 属性注入
-            var objInstancePropertys = type.GetProperties().Where(item => item.IsDefined(typeof(MyICOPropertyInjectionAttribute), true));//获取所有需要做属性注入的属性
+            var objInstancePropertys = classType.GetProperties().Where(item => item.IsDefined(typeof(MyICOPropertyInjectionAttribute), true));//获取所有需要做属性注入的属性
             foreach (PropertyInfo prop in objInstancePropertys)
             {
-                prop.SetValue(objInstance, this.CreateResolveObjectByType(prop.PropertyType, this.realizeMarkName(prop)));
+                prop.SetValue(objInstance, this.CreateResolveObjectByType(prop.PropertyType, this.RealizeMarkName(prop)));
             }
             #endregion
             #region 方法注入(此注入使用非常少)
-            var objInstanceMethods = type.GetMethods().Where(item => item.IsDefined(typeof(MyICOMethodInjectionAttribute), true));//获取所有需要做方法注入的属性
+            var objInstanceMethods = classType.GetMethods().Where(item => item.IsDefined(typeof(MyICOMethodInjectionAttribute), true));//获取所有需要做方法注入的属性
             foreach (MethodInfo method in objInstanceMethods)
             {
                 listPara = new List<object>();
                 foreach (ParameterInfo para in method.GetParameters())
                 {
-                    listPara.Add(this.CreateResolveObjectByType(para.ParameterType, this.realizeMarkName(para)));//递归
+                    listPara.Add(this.CreateResolveObjectByType(para.ParameterType, this.RealizeMarkName(para)));//递归
                 }
                 method.Invoke(objInstance, listPara.ToArray());
+            }
+            #endregion
+            #region AOP
+            if (type.IsDefined(typeof(AOPInterFaceMarkAttribute), true))
+            {
+                objInstance = objInstance.AOP(type);
             }
             #endregion
             #region 生命周期管理
@@ -156,7 +164,7 @@ namespace WebAPI_ICO_AOP.ICO
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        private string realizeMarkName(ICustomAttributeProvider p)
+        private string RealizeMarkName(ICustomAttributeProvider p)
         {
             return p.IsDefined(typeof(MyICOParameterRealizeMarkNameAttribute), true) ? ((MyICOParameterRealizeMarkNameAttribute)(p.GetCustomAttributes(typeof(MyICOParameterRealizeMarkNameAttribute), true)[0]))._realizeMarkName : null;
         }

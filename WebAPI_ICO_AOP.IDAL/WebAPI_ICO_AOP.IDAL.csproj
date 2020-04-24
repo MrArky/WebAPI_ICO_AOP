@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WebAPI_ICO_AOP.AOP\WebAPI_ICO_AOP.AOP.csproj" />
     <ProjectReference Include="..\WebAPI_ICO_AOP.IModels\WebAPI_ICO_AOP.IModels.csproj" />
   </ItemGroup>
 
